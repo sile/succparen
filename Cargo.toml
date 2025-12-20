@@ -1,6 +1,6 @@
 [package]
 name = "succparen"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Takeru Ohta <phjgt308@gmail.com>"]
 edition = "2021"
 license = "MIT"
