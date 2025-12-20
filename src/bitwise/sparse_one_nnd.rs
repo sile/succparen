@@ -33,9 +33,10 @@ impl SparseOneNnd {
         let mut next_small_i = 0;
         for (rank, one_index) in iter.enumerate() {
             let one_index = one_index as usize;
-            let small_base = smalles.len();
+            //let small_base = smalles.len();
             while next_small_i <= one_index {
-                small_count_index = smalles.len();
+                let small_base = smalles.len();
+                small_count_index = small_base;
                 smalles.push(0);
                 prev_index = next_small_i;
 
@@ -139,7 +140,7 @@ impl SelectOne for SparseOneNnd {
         {
             let i = middles
                 .binary_search_by_key(&middle_rank, |e| e.rank as Rank)
-                .unwrap_or_else(|i| i - 1);
+                .unwrap_or_else(|i| i.saturating_sub(1));
             let middle_base = &middles[i];
             let middle_index = i as Index * MIDDLE_SIZE as Index;
 
@@ -222,5 +223,25 @@ mod test {
             // succ
             assert_eq!(nnd.succ_one(i as Index), expected.succ_one(i as Index));
         }
+    }
+    #[test]
+    fn sparse_one_nnd_large_gaps_select_rank() {
+        let mut bits = vec![Bit::from(false); 200_000];
+        // ones near boundaries
+        bits[0] = Bit::from(true);
+        bits[65_536] = Bit::from(true);
+        bits[131_072] = Bit::from(true);
+        bits[199_999] = Bit::from(true);
+
+        let nnd = bits.iter().cloned().collect::<SparseOneNnd>();
+
+        // rank at end should be 4
+        assert_eq!(nnd.rank_one(200_000 as Index - 1), 4 as Rank);
+
+        // select should find each one
+        assert_eq!(nnd.select_one(1).unwrap(), 0);
+        assert_eq!(nnd.select_one(2).unwrap(), 65_536);
+        assert_eq!(nnd.select_one(3).unwrap(), 131_072);
+        assert_eq!(nnd.select_one(4).unwrap(), 199_999);
     }
 }
